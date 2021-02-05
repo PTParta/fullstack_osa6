@@ -1,36 +1,12 @@
-const anecdotesAtStart = [
-  'If it hurts, do it more often',
-  'Adding manpower to a late software project makes it later!',
-  'The first 90 percent of the code accounts for the first 90 percent of the development time...The remaining 10 percent of the code accounts for the other 90 percent of the development time.',
-  'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.',
-  'Premature optimization is the root of all evil.',
-  'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.'
-]
+import anecdoteService from '../services/anecdotes'
 
-const getId = () => (100000 * Math.random()).toFixed(0)
-
-const asObject = (anecdote) => {
-  return {
-    content: anecdote,
-    id: getId(),
-    votes: 0
-  }
-}
-
-const initialState = anecdotesAtStart.map(asObject)
-
-const anecdoteReducer = (state = initialState, action) => {
+const anecdoteReducer = (state = [], action) => {
   console.log('state now: ', state)
   console.log('action', action)
 
   switch (action.type) {
     case 'CREATE_BLOG':
-      const newAnecdote = {
-        content: action.data.content,
-        id: getId(),
-        votes: 0
-      }
-      return [...state, newAnecdote]
+      return [...state, action.data]
 
     case 'VOTE':
       const id = action.data.id
@@ -41,24 +17,41 @@ const anecdoteReducer = (state = initialState, action) => {
       }
       return state.map(anecdote => anecdote.id !== id ? anecdote : changedAnecdote).sort((a, b) => b.votes - a.votes)
 
+    case 'INIT_ANECDOTES':
+      return action.data.sort((a, b) => b.votes - a.votes)
+
     default:
       return state
   }
 }
 
 export const createAnecdote = (content) => {
-  return {
-    type: 'CREATE_BLOG',
-    data: {
-      content: content
-    }
+  return async dispatch => {
+    const newAnecdote = await anecdoteService.createNew(content)
+    dispatch({
+      type: 'CREATE_BLOG',
+      data: newAnecdote
+    })
   }
 }
 
-export const incrementVotesOf = (id) => {
-  return {
-    type: 'VOTE',
-    data: { id }
+export const incrementVotesOf = (content) => {
+  return async dispatch => {
+    await anecdoteService.voteAnecdote(content)
+    dispatch({
+      type: 'VOTE',
+      data: content
+    })
+  }
+}
+
+export const initializeAnecdotes = (anecdotes) => {
+  return async dispatch => {
+    const anecdotes = await anecdoteService.getAll()
+    dispatch({
+      type: 'INIT_ANECDOTES',
+      data: anecdotes
+    })
   }
 }
 
