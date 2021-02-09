@@ -8,10 +8,22 @@ const filterReducer = (state = '', action) => {
 }
 
 export const filterChange = (filter) => {
+  console.log('filter change filter value', filter)
+  return dispatch => {
+    dispatch({
+      type: 'SET_FILTER',
+      filter
+    })
+  }
+}
+
+
+/* export const filterChange = (filter) => {
   return {
     type: 'SET_FILTER',
     filter
   }
-}
+} */
 
 export default filterReducer
+

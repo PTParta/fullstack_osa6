@@ -11,13 +11,21 @@ const notificationReducer = (state = notificationAtStart, action) => {
   }
 }
 
+let timeout
 export const setNotification = (notification, time) => {
-  return dispatch => {
+  return async dispatch => {
     dispatch({
       type: 'NOTIFY',
       data: notification
     })
-    setTimeout(() => {
+
+    console.log('timeout is', timeout)
+    if (timeout) {
+      console.log('Clearing timeout')
+      clearTimeout(timeout)
+      timeout = null
+    }
+    timeout = setTimeout(() => {
       dispatch(hideNotification())
     }, 1000 * time)
   }
